@@ -28,8 +28,8 @@ export type PostgreSQLPersistenceAdapterParams = {
  */
 export abstract class PostgreSQLConnection {
 
-    public abstract query(query: string, params?: (any)[]): Promise<pg.QueryResult<any>>;
     protected abstract connect(): Promise<pg.PoolClient> | Promise<void>
+    public abstract query(query: string, params?: (any)[]): Promise<pg.QueryResult<any>>;
     public abstract end(): Promise<void>
 }
 
@@ -78,13 +78,6 @@ export class PgClientConnection extends PostgreSQLConnection {
         this.connect()
     }
 
-    public async end(): Promise<void> {
-        const endResult = this.client.end();
-        new Promise<void>((resolve) => {
-            resolve(endResult);
-        });
-    }
-
     protected async connect(): Promise<void> {
         const connectResult = this.client.connect();
         new Promise<void>((resolve) => {
@@ -98,16 +91,23 @@ export class PgClientConnection extends PostgreSQLConnection {
             resolve(queryResult);
         });
     }
+
+    public async end(): Promise<void> {
+        const endResult = this.client.end();
+        new Promise<void>((resolve) => {
+            resolve(endResult);
+        });
+    }
 }
 
 /**
  * Implementation of {@link PersistenceAdapter} using PostgreSQL.
  */
 export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
-  protected tableName: string;
-  protected partitionKeyName: string;
-  protected attributesName: string;
-  protected partitionKeyGenerator: PartitionKeyGenerator;
+    protected tableName: string;
+    protected partitionKeyName: string;
+    protected attributesName: string;
+    protected partitionKeyGenerator: PartitionKeyGenerator;
     protected connection: PostgreSQLConnection;
 
     constructor(params: PostgreSQLPersistenceAdapterParams) {
@@ -116,28 +116,28 @@ export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
         this.attributesName = params.attributesName ? params.attributesName : 'attributes';
         this.partitionKeyGenerator = params.partitionKeyGenerator ? params.partitionKeyGenerator : PartitionKeyGenerators.userId;
         this.connection = params.connection;
-  }
+    }
 
-  /**
-   * Retrieves persistence attributes from PostgreSQL database.
-   * @param {RequestEnvelope} requestEnvelope Request envelope used to generate partition key.
-   * @returns {Promise<Object.<string, any>>}
-   */
-  public async getAttributes(requestEnvelope: RequestEnvelope): Promise<{ [key: string]: any }> {
+    /**
+     * Retrieves persistence attributes from PostgreSQL database.
+     * @param {RequestEnvelope} requestEnvelope Request envelope used to generate partition key.
+     * @returns {Promise<Object.<string, any>>}
+     */
+    public async getAttributes(requestEnvelope: RequestEnvelope): Promise<{ [key: string]: any }> {
         const statement = `SELECT ${this.attributesName} FROM ${this.tableName} WHERE ${this.partitionKeyName}=$1`
         const query = await this.connection.query(statement, [this.partitionKeyGenerator(requestEnvelope)])
         const queryReturn = query.rows[0].attributes
         console.log('get return:', queryReturn)
         return queryReturn;
-  }
+    }
 
-  /**
-   * Saves persistence attributes to PostgreSQL database.
-   * @param {RequestEnvelope} requestEnvelope Request envelope used to generate partition key.
-   * @param {Object.<string, any>} attributes Attributes to be saved to PostgreSQL database.
-   * @return {Promise<void>}
-   */
-  public async saveAttributes(requestEnvelope: RequestEnvelope, attributes: { [key: string]: any }): Promise<void> {
+    /**
+     * Saves persistence attributes to PostgreSQL database.
+     * @param {RequestEnvelope} requestEnvelope Request envelope used to generate partition key.
+     * @param {Object.<string, any>} attributes Attributes to be saved to PostgreSQL database.
+     * @return {Promise<void>}
+     */
+    public async saveAttributes(requestEnvelope: RequestEnvelope, attributes: { [key: string]: any }): Promise<void> {
         const statement =
             `INSERT INTO ${this.tableName}(${this.partitionKeyName},${this.attributesName}) 
             VALUES ($1,$2) 
@@ -145,14 +145,14 @@ export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
             SET attributes = $2`
         const result = await this.connection.query(statement, [this.partitionKeyGenerator(requestEnvelope), attributes])
         console.log('save result:', result)
-  }
+    }
 
-  /**
-   * Delete persistence attributes from PostgreSQL database.
-   * @param {RequestEnvelope} requestEnvelope Request envelope used to generate partition key.
-   * @return {Promise<void>}
-   */
-  public async deleteAttributes(requestEnvelope: RequestEnvelope): Promise<void> {
-    console.log('do nothing');
-  }
+    /**
+     * Delete persistence attributes from PostgreSQL database.
+     * @param {RequestEnvelope} requestEnvelope Request envelope used to generate partition key.
+     * @return {Promise<void>}
+     */
+    public async deleteAttributes(requestEnvelope: RequestEnvelope): Promise<void> {
+        console.log('do nothing');
+    }
 }
