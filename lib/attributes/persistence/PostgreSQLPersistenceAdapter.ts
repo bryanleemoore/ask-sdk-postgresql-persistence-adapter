@@ -124,7 +124,11 @@ export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
    * @returns {Promise<Object.<string, any>>}
    */
   public async getAttributes(requestEnvelope: RequestEnvelope): Promise<{ [key: string]: any }> {
-    return Promise<'T'>;
+        const statement = `SELECT ${this.attributesName} FROM ${this.tableName} WHERE ${this.partitionKeyName}=$1`
+        const query = await this.connection.query(statement, [this.partitionKeyGenerator(requestEnvelope)])
+        const queryReturn = query.rows[0].attributes
+        console.log('get return:', queryReturn)
+        return queryReturn;
   }
 
   /**
