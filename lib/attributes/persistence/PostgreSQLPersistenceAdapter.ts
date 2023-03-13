@@ -32,6 +32,74 @@ export abstract class PostgreSQLConnection {
     protected abstract connect(): Promise<pg.PoolClient> | Promise<void>
     public abstract end(): Promise<void>
 }
+
+/**
+ * PostgreSQL Pool connection extending {@link PostgreSQLConnection}.
+ */
+export class PgPoolConnection extends PostgreSQLConnection {
+    private pool: pg.Pool;
+    constructor(config: pg.PoolConfig) {
+        super()
+        this.pool = new pg.Pool(config);
+    }
+
+    protected async connect(): Promise<pg.PoolClient> {
+        const connectResult = this.pool.connect();
+        return new Promise<pg.PoolClient>((resolve) => {
+            resolve(connectResult);
+        });
+    }
+
+    public async query(query: string, params?: (any)[]): Promise<pg.QueryResult<any>> {
+        const connection = await this.connect()
+        const queryResult = this.pool.query(query, params);
+        const releasePoolConnection = await connection.release();
+        return new Promise<pg.QueryResult<any>>((resolve) => {
+            resolve(queryResult);
+        });
+    }
+
+    public async end(): Promise<void> {
+        const endResult = this.pool.end();
+        new Promise<void>((resolve) => {
+            resolve(endResult);
+        });
+    }
+}
+
+/**
+ * PostgreSQL Client connection extending {@link PostgreSQLConnection}.
+ */
+export class PgClientConnection extends PostgreSQLConnection {
+    private client: pg.Client;
+    constructor(config: pg.ClientConfig) {
+        super()
+        this.client = new pg.Client(config);
+        this.connect()
+    }
+
+    public async end(): Promise<void> {
+        const endResult = this.client.end();
+        new Promise<void>((resolve) => {
+            resolve(endResult);
+        });
+    }
+
+    protected async connect(): Promise<void> {
+        const connectResult = this.client.connect();
+        new Promise<void>((resolve) => {
+            resolve(connectResult);
+        });
+    }
+
+    public async query(query: string, params?: (any)[]): Promise<pg.QueryResult<any>> {
+        const queryResult = this.client.query(query, params);
+        return new Promise<pg.QueryResult<any>>(async (resolve) => {
+            resolve(queryResult);
+        });
+    }
+}
+
 /**
  * Implementation of {@link PersistenceAdapter} using PostgreSQL.
  */
