@@ -107,26 +107,15 @@ export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
   protected tableName: string;
   protected partitionKeyName: string;
   protected attributesName: string;
-  protected poolConfig: pg.PoolConfig;
-  protected clientConfig: pg.ClientConfig;
   protected partitionKeyGenerator: PartitionKeyGenerator;
+    protected connection: PostgreSQLConnection;
 
-  constructor(config: {
-    tableName: string;
-    partitionKeyName?: string;
-    attributesName?: string;
-    poolConfig?: pg.PoolConfig;
-    clientConfig?: pg.ClientConfig;
-    partitionKeyGenerator?: PartitionKeyGenerator;
-  }) {
-    this.tableName = config.tableName;
-    this.partitionKeyName = config.partitionKeyName ? config.partitionKeyName : 'user_id';
-    this.attributesName = config.attributesName ? config.attributesName : 'attributes';
-    this.poolConfig = config.poolConfig ? config.poolConfig : {};
-    this.clientConfig = config.clientConfig ? config.clientConfig : {};
-    this.partitionKeyGenerator = config.partitionKeyGenerator
-      ? config.partitionKeyGenerator
-      : PartitionKeyGenerators.userId;
+    constructor(params: PostgreSQLPersistenceAdapterParams) {
+        this.tableName = params.tableName;
+        this.partitionKeyName = params.partitionKeyName ? params.partitionKeyName : 'user_id';
+        this.attributesName = params.attributesName ? params.attributesName : 'attributes';
+        this.partitionKeyGenerator = params.partitionKeyGenerator ? params.partitionKeyGenerator : PartitionKeyGenerators.userId;
+        this.connection = params.connection;
   }
 
   /**
