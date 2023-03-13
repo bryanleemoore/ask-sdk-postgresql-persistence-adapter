@@ -24,6 +24,15 @@ export type PostgreSQLPersistenceAdapterParams = {
 };
 
 /**
+ * Abstract PostgreSQL connection for {@link PostgreSQLPersistenceAdapter}.
+ */
+export abstract class PostgreSQLConnection {
+
+    public abstract query(query: string, params?: (any)[]): Promise<pg.QueryResult<any>>;
+    protected abstract connect(): Promise<pg.PoolClient> | Promise<void>
+    public abstract end(): Promise<void>
+}
+/**
  * Implementation of {@link PersistenceAdapter} using PostgreSQL.
  */
 export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
