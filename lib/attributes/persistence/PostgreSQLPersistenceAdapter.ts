@@ -14,6 +14,15 @@ import { createAskSdkError, PersistenceAdapter } from 'ask-sdk-core';
 import { RequestEnvelope } from 'ask-sdk-model';
 import { PartitionKeyGenerator, PartitionKeyGenerators } from './PartitionKeyGenerators';
 import * as pg from 'pg';
+
+export type PostgreSQLPersistenceAdapterParams = {
+    tableName: string;
+    partitionKeyName?: string;
+    attributesName?: string;
+    partitionKeyGenerator?: PartitionKeyGenerator;
+    connection: PostgreSQLConnection;
+};
+
 /**
  * Implementation of {@link PersistenceAdapter} using PostgreSQL.
  */
