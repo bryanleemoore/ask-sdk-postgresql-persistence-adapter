@@ -122,6 +122,8 @@ export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
     protected attributesName: string;
     protected partitionKeyGenerator: PartitionKeyGenerator;
     protected connection: PostgreSQLConnection;
+    private connectionChecked: boolean;
+    private tableExistsChecked: boolean;
 
     constructor(params: PostgreSQLPersistenceAdapterParams) {
 
@@ -130,6 +132,19 @@ export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
 
         await this.connection.query(statement);
     }
+
+    private async doPreQueryCheck(): Promise<void> {
+        if (!this.connectionChecked) {
+            await this.connection.checkConnection();
+            this.connectionChecked = true;
+        }
+        if (!this.tableExistsChecked) {
+            const doesTableExists = await this.checkIfTableExists();
+            if (!doesTableExists) {
+                await this.createTable();
+            }
+            this.tableExistsChecked = true;
+        }
     }
 
     /**
@@ -138,20 +153,16 @@ export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
      * @returns {Promise<Object.<string, any>>}
      */
     public async getAttributes(requestEnvelope: RequestEnvelope): Promise<{ [key: string]: any }> {
-        let statement: string = `SELECT EXISTS(SELECT ${this.attributesName} FROM ${this.tableName} WHERE ${this.partitionKeyName} = $1)`
-        let queryReturn!: Promise<{ [key: string]: any }>;
-
-        await this.connection.query(statement, [this.partitionKeyGenerator(requestEnvelope)])
-            .then(async (result) => {
-                queryReturn = result.rows[0].exists
-                if (queryReturn) {
-                    statement = `SELECT ${this.attributesName} FROM ${this.tableName} WHERE ${this.partitionKeyName} = $1`
-                    const newQuery = await this.connection.query(statement, [this.partitionKeyGenerator(requestEnvelope)])
-                    queryReturn = newQuery.rows[0].attributes
+        try {
+            await this.doPreQueryCheck();
+        } catch (err) {
+            if (err instanceof Error) {
+                throw createAskSdkError(
+                    this.constructor.name,
+                    `Could not establish connection to database on table (${this.tableName}): ${err.message}`,
+                );
                 }
-            })
-            .catch((err) => {
-                throw createAskSdkError(this.constructor.name, `Could not read item (${this.partitionKeyGenerator(requestEnvelope)}) from table (${this.tableName}): ${err.message}`)
+        }
 
             });
 
@@ -168,11 +179,18 @@ export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
      * @return {Promise<void>}
      */
     public async saveAttributes(requestEnvelope: RequestEnvelope, attributes: { [key: string]: any }): Promise<void> {
-        let statement : string =
-            `INSERT INTO ${this.tableName}(${this.partitionKeyName},${this.attributesName}) 
-            VALUES ($1,$2) 
-            ON CONFLICT (${this.partitionKeyName}) DO UPDATE 
-            SET attributes = $2`
+        try {
+            await this.doPreQueryCheck();
+        } catch (err) {
+            if (err instanceof Error) {
+                throw createAskSdkError(
+                    this.constructor.name,
+                    `Could not establish connection to database on table (${this.tableName}): ${err.message}`,
+                );
+            }
+        }
+
+        const partitionKeyValue = this.partitionKeyGenerator(requestEnvelope);
 
         await this.connection.query(statement, [this.partitionKeyGenerator(requestEnvelope), attributes])
             .then((result) => {
@@ -189,7 +207,18 @@ export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
      * @return {Promise<void>}
      */
     public async deleteAttributes(requestEnvelope: RequestEnvelope): Promise<void> {
-        let statement: string = `DELETE FROM ${this.tableName} WHERE ${this.partitionKeyName} = $1`
+        try {
+            await this.doPreQueryCheck();
+        } catch (err) {
+            if (err instanceof Error) {
+                throw createAskSdkError(
+                    this.constructor.name,
+                    `Could not establish connection to database on table (${this.tableName}): ${err.message}`,
+                );
+            }
+        }
+
+        const partitionKeyValue = this.partitionKeyGenerator(requestEnvelope);
 
         await this.connection.query(statement, [this.partitionKeyGenerator(requestEnvelope)])
             .then((result) => {
