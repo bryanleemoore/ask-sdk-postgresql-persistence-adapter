@@ -40,7 +40,7 @@ export class PgPoolConnection extends PostgreSQLConnection {
     constructor(config: pg.PoolConfig) {
         super();
         this.pool = new pg.Pool(config);
-            }
+    }
 
     public async query(query: string, params?: any[]): Promise<pg.QueryResult<any>> {
         const connection = await this.pool.connect();
@@ -178,7 +178,7 @@ export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
                     this.constructor.name,
                     `Could not establish connection to database on table (${this.tableName}): ${err.message}`,
                 );
-                }
+            }
         }
 
         const partitionKeyValue = this.partitionKeyGenerator(requestEnvelope);
@@ -193,7 +193,7 @@ export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
                     this.constructor.name,
                     `Could not read item (${this.partitionKeyGenerator(requestEnvelope)}) from table (${this.tableName}): ${err.message}`,
                 );
-        }
+            }
         }
         return {};
     }
