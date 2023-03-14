@@ -127,6 +127,38 @@ export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
 
     constructor(params: PostgreSQLPersistenceAdapterParams) {
 
+    private async checkIfTableExists(): Promise<boolean> {
+        const statement = `SELECT EXISTS (SELECT table_name FROM information_schema.tables WHERE table_name = $1)`;
+        const result = await this.connection.query(statement, [this.tableName]);
+
+        return result.rows[0].exists;
+    }
+    private async checkIfAttributesExists(partionKeyValue: string): Promise<boolean> {
+        const statement = `SELECT EXISTS(SELECT ${this.attributesName} FROM ${this.tableName} WHERE ${this.partitionKeyName} = $1)`;
+        const result = await this.connection.query(statement, [partionKeyValue]);
+
+        return result.rows[0].exists;
+    }
+
+    private async getAttributesQuery(partionKeyValue: string): Promise<{ [key: string]: any }> {
+        const statement = `SELECT ${this.attributesName} FROM ${this.tableName} WHERE ${this.partitionKeyName} = $1`;
+        const result = await this.connection.query(statement, [partionKeyValue]);
+
+        return result.rows[0].attributes;
+    }
+
+    private async saveAttributeQuery(partitionKeyValue: string, attributes: { [key: string]: any }): Promise<void> {
+        const statement = `INSERT INTO ${this.tableName}(${this.partitionKeyName},${this.attributesName}) VALUES ($1,$2) ON CONFLICT (${this.partitionKeyName}) DO UPDATE SET attributes = $2`;
+
+        await this.connection.query(statement, [partitionKeyValue, attributes]);
+    }
+
+    private async deleteAttributesQuery(partitionKeyValue: string): Promise<void> {
+        const statement = `DELETE FROM ${this.tableName} WHERE ${this.partitionKeyName} = $1`;
+
+        await this.connection.query(statement, [partitionKeyValue]);
+    }
+
     private async createTable(): Promise<void> {
         const statement = `CREATE TABLE ${this.tableName}(serial_primary_key SERIAL PRIMARY KEY, ${this.partitionKeyName} TEXT UNIQUE NOT NULL, ${this.attributesName} JSON NOT NULL);`;
 
@@ -164,12 +196,21 @@ export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
                 }
         }
 
-            });
+        const partitionKeyValue = this.partitionKeyGenerator(requestEnvelope);
 
-        if (!queryReturn) {
-            return {}
+        try {
+            const doesRowExist = await this.checkIfAttributesExists(partitionKeyValue);
+
+            if (doesRowExist) return await this.getAttributesQuery(partitionKeyValue);
+        } catch (err) {
+            if (err instanceof Error) {
+                throw createAskSdkError(
+                    this.constructor.name,
+                    `Could not read item (${this.partitionKeyGenerator(requestEnvelope)}) from table (${this.tableName}): ${err.message}`,
+                );
         }
-        return queryReturn;
+        }
+        return {};
     }
 
     /**
@@ -192,13 +233,16 @@ export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
 
         const partitionKeyValue = this.partitionKeyGenerator(requestEnvelope);
 
-        await this.connection.query(statement, [this.partitionKeyGenerator(requestEnvelope), attributes])
-            .then((result) => {
-                const query = result
-            })
-            .catch((err) => {
-                throw createAskSdkError(this.constructor.name, `Could not save item (${this.partitionKeyGenerator(requestEnvelope)}) on table (${this.tableName}): ${err.message}`)
-            });
+        try {
+            await this.saveAttributeQuery(partitionKeyValue, attributes);
+        } catch (err) {
+            if (err instanceof Error) {
+                throw createAskSdkError(
+                    this.constructor.name,
+                    `Could not save item (${this.partitionKeyGenerator(requestEnvelope)}) on table (${this.tableName}): ${err.message}`,
+                );
+            }
+        }
     }
 
     /**
@@ -220,12 +264,15 @@ export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
 
         const partitionKeyValue = this.partitionKeyGenerator(requestEnvelope);
 
-        await this.connection.query(statement, [this.partitionKeyGenerator(requestEnvelope)])
-            .then((result) => {
-                const query = result
-            })
-            .catch((err) => {
-                throw createAskSdkError(this.constructor.name, `Could not delete item (${this.partitionKeyGenerator(requestEnvelope)}) on table (${this.tableName}): ${err.message}`)
-            });
+        try {
+            await this.deleteAttributesQuery(partitionKeyValue);
+        } catch (err) {
+            if (err instanceof Error) {
+                throw createAskSdkError(
+                    this.constructor.name,
+                    `Could not delete item (${this.partitionKeyGenerator(requestEnvelope)}) on table (${this.tableName}): ${err.message}`,
+                );
+            }
+        }
     }
 }
