@@ -27,10 +27,7 @@ export type PostgreSQLPersistenceAdapterParams = {
  * Abstract PostgreSQL connection for {@link PostgreSQLPersistenceAdapter}.
  */
 export abstract class PostgreSQLConnection {
-
-    protected abstract connect(): Promise<pg.PoolClient> | Promise<void>
-    public abstract query(query: string, params?: (any)[]): Promise<pg.QueryResult<any>>;
-    public abstract end(): Promise<void>
+    public abstract checkConnection(): Promise<void>;
 }
 
 /**
@@ -50,29 +47,20 @@ export class PgPoolConnection extends PostgreSQLConnection {
             }
         });
 
-    }
-
-    protected async connect(): Promise<pg.PoolClient> {
-        const connectResult = this.pool.connect();
-        return new Promise<pg.PoolClient>((resolve) => {
-            resolve(connectResult);
-        });
-    }
-
-    public async query(query: string, params?: (any)[]): Promise<pg.QueryResult<any>> {
-        const connection = await this.connect()
-        const queryResult = this.pool.query(query, params);
-        const releasePoolConnection = await connection.release();
-        return new Promise<pg.QueryResult<any>>((resolve) => {
-            resolve(queryResult);
-        });
+    public async query(query: string, params?: any[]): Promise<pg.QueryResult<any>> {
+        const connection = await this.pool.connect();
+        const result = await this.pool.query(query, params);
+        connection.release();
+        return result;
     }
 
     public async end(): Promise<void> {
-        const endResult = this.pool.end();
-        new Promise<void>((resolve) => {
-            resolve(endResult);
-        });
+        return this.pool.end();
+    }
+
+    public async checkConnection(): Promise<void> {
+        const connection = await this.pool.connect();
+        connection.release();
     }
 }
 
@@ -91,25 +79,16 @@ export class PgClientConnection extends PostgreSQLConnection {
         })
     }
 
-    protected async connect(): Promise<void> {
-        const connectResult = this.client.connect();
-        new Promise<void>((resolve) => {
-            resolve(connectResult);
-        });
-    }
-
-    public async query(query: string, params?: (any)[]): Promise<pg.QueryResult<any>> {
-        const queryResult = this.client.query(query, params);
-        return new Promise<pg.QueryResult<any>>((resolve) => {
-            resolve(queryResult);
-        });
+    public async query(query: string, params?: any[]): Promise<pg.QueryResult<any>> {
+        return await this.client.query(query, params);
     }
 
     public async end(): Promise<void> {
-        const endResult = this.client.end();
-        new Promise<void>((resolve) => {
-            resolve(endResult);
-        });
+        this.client.end();
+    }
+
+    public async checkConnection(): Promise<void> {
+        this.client.connect();
     }
 }
 
