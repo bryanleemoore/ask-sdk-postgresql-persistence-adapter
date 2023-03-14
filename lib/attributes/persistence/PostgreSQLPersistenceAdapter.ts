@@ -188,6 +188,14 @@ export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
      * @return {Promise<void>}
      */
     public async deleteAttributes(requestEnvelope: RequestEnvelope): Promise<void> {
-        console.log('do nothing');
+        let statement: string = `DELETE FROM ${this.tableName} WHERE ${this.partitionKeyName} = $1`
+
+        await this.connection.query(statement, [this.partitionKeyGenerator(requestEnvelope)])
+            .then((result) => {
+                const query = result
+            })
+            .catch((err) => {
+                throw createAskSdkError(this.constructor.name, `Could not delete item (${this.partitionKeyGenerator(requestEnvelope)}) on table (${this.tableName}): ${err.message}`)
+            });
     }
 }
