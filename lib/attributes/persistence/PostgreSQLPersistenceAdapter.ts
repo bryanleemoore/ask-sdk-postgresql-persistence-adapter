@@ -38,7 +38,7 @@ export abstract class PostgreSQLConnection {
 export class PgPoolConnection extends PostgreSQLConnection {
     private pool: pg.Pool;
     constructor(config: pg.PoolConfig) {
-        super()
+        super();
         this.pool = new pg.Pool(config);
             }
 
@@ -65,7 +65,7 @@ export class PgPoolConnection extends PostgreSQLConnection {
 export class PgClientConnection extends PostgreSQLConnection {
     private client: pg.Client;
     constructor(config: pg.ClientConfig) {
-        super()
+        super();
         this.client = new pg.Client(config);
     }
 
