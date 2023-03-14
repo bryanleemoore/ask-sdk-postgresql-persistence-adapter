@@ -126,6 +126,22 @@ export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
     private tableExistsChecked: boolean;
 
     constructor(params: PostgreSQLPersistenceAdapterParams) {
+        const {
+            tableName,
+            partitionKeyName = 'id',
+            attributesName = 'attributes',
+            partitionKeyGenerator = PartitionKeyGenerators.userId,
+            connection,
+        } = params;
+
+        this.tableName = tableName;
+        this.partitionKeyName = partitionKeyName;
+        this.attributesName = attributesName;
+        this.partitionKeyGenerator = partitionKeyGenerator;
+        this.connection = connection;
+        this.connectionChecked = false;
+        this.tableExistsChecked = false;
+    }
 
     private async checkIfTableExists(): Promise<boolean> {
         const statement = `SELECT EXISTS (SELECT table_name FROM information_schema.tables WHERE table_name = $1)`;
