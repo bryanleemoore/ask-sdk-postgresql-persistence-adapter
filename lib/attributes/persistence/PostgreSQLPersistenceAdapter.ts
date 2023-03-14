@@ -137,10 +137,26 @@ export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
      * @returns {Promise<Object.<string, any>>}
      */
     public async getAttributes(requestEnvelope: RequestEnvelope): Promise<{ [key: string]: any }> {
-        const statement = `SELECT ${this.attributesName} FROM ${this.tableName} WHERE ${this.partitionKeyName}=$1`
-        const query = await this.connection.query(statement, [this.partitionKeyGenerator(requestEnvelope)])
-        const queryReturn = query.rows[0].attributes
-        console.log('get return:', queryReturn)
+        let statement: string = `SELECT EXISTS(SELECT ${this.attributesName} FROM ${this.tableName} WHERE ${this.partitionKeyName} = $1)`
+        let queryReturn!: Promise<{ [key: string]: any }>;
+
+        await this.connection.query(statement, [this.partitionKeyGenerator(requestEnvelope)])
+            .then(async (result) => {
+                queryReturn = result.rows[0].exists
+                if (queryReturn) {
+                    statement = `SELECT ${this.attributesName} FROM ${this.tableName} WHERE ${this.partitionKeyName} = $1`
+                    const newQuery = await this.connection.query(statement, [this.partitionKeyGenerator(requestEnvelope)])
+                    queryReturn = newQuery.rows[0].attributes
+                }
+            })
+            .catch((err) => {
+                throw createAskSdkError(this.constructor.name, `Could not read item (${this.partitionKeyGenerator(requestEnvelope)}) from table (${this.tableName}): ${err.message}`)
+
+            });
+
+        if (!queryReturn) {
+            return {}
+        }
         return queryReturn;
     }
 
