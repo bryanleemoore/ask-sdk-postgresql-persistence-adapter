@@ -124,11 +124,12 @@ export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
     protected connection: PostgreSQLConnection;
 
     constructor(params: PostgreSQLPersistenceAdapterParams) {
-        this.tableName = params.tableName;
-        this.partitionKeyName = params.partitionKeyName ? params.partitionKeyName : 'user_id';
-        this.attributesName = params.attributesName ? params.attributesName : 'attributes';
-        this.partitionKeyGenerator = params.partitionKeyGenerator ? params.partitionKeyGenerator : PartitionKeyGenerators.userId;
-        this.connection = params.connection;
+
+    private async createTable(): Promise<void> {
+        const statement = `CREATE TABLE ${this.tableName}(serial_primary_key SERIAL PRIMARY KEY, ${this.partitionKeyName} TEXT UNIQUE NOT NULL, ${this.attributesName} JSON NOT NULL);`;
+
+        await this.connection.query(statement);
+    }
     }
 
     /**
