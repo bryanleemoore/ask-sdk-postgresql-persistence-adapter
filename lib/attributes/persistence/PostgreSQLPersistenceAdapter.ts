@@ -167,13 +167,19 @@ export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
      * @return {Promise<void>}
      */
     public async saveAttributes(requestEnvelope: RequestEnvelope, attributes: { [key: string]: any }): Promise<void> {
-        const statement =
+        let statement : string =
             `INSERT INTO ${this.tableName}(${this.partitionKeyName},${this.attributesName}) 
             VALUES ($1,$2) 
             ON CONFLICT (${this.partitionKeyName}) DO UPDATE 
             SET attributes = $2`
-        const result = await this.connection.query(statement, [this.partitionKeyGenerator(requestEnvelope), attributes])
-        console.log('save result:', result)
+
+        await this.connection.query(statement, [this.partitionKeyGenerator(requestEnvelope), attributes])
+            .then((result) => {
+                const query = result
+            })
+            .catch((err) => {
+                throw createAskSdkError(this.constructor.name, `Could not save item (${this.partitionKeyGenerator(requestEnvelope)}) on table (${this.tableName}): ${err.message}`)
+            });
     }
 
     /**
