@@ -100,7 +100,7 @@ export class PgClientConnection extends PostgreSQLConnection {
 
     public async query(query: string, params?: (any)[]): Promise<pg.QueryResult<any>> {
         const queryResult = this.client.query(query, params);
-        return new Promise<pg.QueryResult<any>>(async (resolve) => {
+        return new Promise<pg.QueryResult<any>>((resolve) => {
             resolve(queryResult);
         });
     }
