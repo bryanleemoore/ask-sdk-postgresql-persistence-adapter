@@ -40,14 +40,7 @@ export class PgPoolConnection extends PostgreSQLConnection {
     constructor(config: pg.PoolConfig) {
         super()
         this.pool = new pg.Pool(config);
-        this.pool.connect((err, res) => {
-            if (err) {
-                throw createAskSdkError(this.constructor.name, `Could not initalize Pool database connection: ${err.message}`)
             }
-            else {
-                res.release()
-            }
-        });
 
     public async query(query: string, params?: any[]): Promise<pg.QueryResult<any>> {
         const connection = await this.pool.connect();
@@ -74,11 +67,6 @@ export class PgClientConnection extends PostgreSQLConnection {
     constructor(config: pg.ClientConfig) {
         super()
         this.client = new pg.Client(config);
-        this.client.connect((err) => {
-            if (err) {
-                throw createAskSdkError(this.constructor.name, `Could not initalize Client database connection: ${err.message}`)
-            }
-        })
     }
 
     public async query(query: string, params?: any[]): Promise<pg.QueryResult<any>> {
