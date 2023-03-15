@@ -21,12 +21,13 @@ const PgConnectionConfig = {
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
   password: process.env.DB_PASSWORD,
-  port: parseInt(process.env.DB_PORT || '3000', 10)
+  port: parseInt(process.env.DB_PORT || '5432', 10)
 }
 
 describe('PostgreSQLPersistenceAdapter with Client', () => {
   let adapter: PostgreSQLPersistenceAdapter
   let testConnection = new PgClientConnection(PgConnectionConfig)
+  console.log(testConnection)
   beforeAll(async () => {
     adapter = new PostgreSQLPersistenceAdapter({
       tableName: 'test_table_client',
