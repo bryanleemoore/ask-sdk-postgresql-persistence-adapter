@@ -75,7 +75,7 @@ export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
     private async saveAttributeQuery(partitionKeyValue: string, attributes: { [key: string]: any }): Promise<void> {
         const statement = `INSERT INTO ${this.tableName}(${this.partitionKeyName},${this.attributesName}) VALUES ($1,$2) ON CONFLICT (${this.partitionKeyName}) DO UPDATE SET attributes = $2`;
 
-        await this.connection.query(statement, [partitionKeyValue, attributes]);
+        await this.connection.query(statement, [partitionKeyValue, JSON.stringify(attributes)]);
     }
 
     private async deleteAttributesQuery(partitionKeyValue: string): Promise<void> {
