@@ -1,0 +1,12 @@
+lib/
+node_modules/
+code_playground/
+test/
+.env
+.env.example
+.prettierrc
+enviornment.d.ts
+jest.config.js
+package-lock.json
+tsconfig.json
+tslint.json
