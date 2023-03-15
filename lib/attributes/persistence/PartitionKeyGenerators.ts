@@ -22,65 +22,40 @@ export type PartitionKeyGenerator = (requestEnvelope: RequestEnvelope) => string
  * Object containing implementations of {@link PartitionKeyGenerator}.
  */
 export const PartitionKeyGenerators = {
-  /**
-   * Gets attributes id using user id.
-   * @param {RequestEnvelope} requestEnvelope
-   * @returns {string}
-   */
-  userId(requestEnvelope: RequestEnvelope): string {
-    if (
-      !(
-        requestEnvelope &&
-        requestEnvelope.context &&
-        requestEnvelope.context.System &&
-        requestEnvelope.context.System.user &&
-        requestEnvelope.context.System.user.userId
-      )
-    ) {
-      throw createAskSdkError('PartitionKeyGenerators', 'Cannot retrieve user id from request envelope!');
-    }
+    /**
+     * Gets attributes id using user id.
+     * @param {RequestEnvelope} requestEnvelope
+     * @returns {string}
+     */
+    userId(requestEnvelope: RequestEnvelope): string {
+        if (!requestEnvelope?.context?.System?.user?.userId) {
+            throw createAskSdkError('PartitionKeyGenerators', 'Cannot retrieve user id from request envelope!');
+        }
+        return requestEnvelope.context.System.user.userId;
+    },
 
-    return requestEnvelope.context.System.user.userId;
-  },
+    /**
+     * Gets attributes id using device id.
+     * @param {RequestEnvelope} requestEnvelope
+     * @returns {string}
+     */
+    deviceId(requestEnvelope: RequestEnvelope): string {
+        if (!requestEnvelope?.context?.System?.device?.deviceId) {
+            throw createAskSdkError('PartitionKeyGenerators', 'Cannot retrieve device id from request envelope!');
+        }
+        return requestEnvelope.context.System.device.deviceId;
+    },
 
-  /**
-   * Gets attributes id using device id.
-   * @param {RequestEnvelope} requestEnvelope
-   * @returns {string}
-   */
-  deviceId(requestEnvelope: RequestEnvelope): string {
-    if (
-      !(
-        requestEnvelope &&
-        requestEnvelope.context &&
-        requestEnvelope.context.System &&
-        requestEnvelope.context.System.device &&
-        requestEnvelope.context.System.device.deviceId
-      )
-    ) {
-      throw createAskSdkError('PartitionKeyGenerators', 'Cannot retrieve device id from request envelope!');
-    }
-
-    return requestEnvelope.context.System.device.deviceId;
-  },
-
-  /**
-   * Gets attributes id using person id.
-   * Fallback to fetching attributes id using user id, if personId is not present.
-   * @param {RequestEnvelope} requestEnvelope
-   * @returns {string}
-   */
-  personId(requestEnvelope: RequestEnvelope): string {
-    if (
-      requestEnvelope &&
-      requestEnvelope.context &&
-      requestEnvelope.context.System &&
-      requestEnvelope.context.System.person &&
-      requestEnvelope.context.System.person.personId
-    ) {
-      return requestEnvelope.context.System.person.personId;
-    }
-
-    return PartitionKeyGenerators.userId(requestEnvelope);
-  },
+    /**
+     * Gets attributes id using person id.
+     * Fallback to fetching attributes id using user id, if personId is not present.
+     * @param {RequestEnvelope} requestEnvelope
+     * @returns {string}
+     */
+    personId(requestEnvelope: RequestEnvelope): string {
+        if (requestEnvelope?.context?.System?.person?.personId) {
+            return requestEnvelope.context.System.person.personId;
+        }
+        return PartitionKeyGenerators.userId(requestEnvelope);
+    },
 };
