@@ -24,65 +24,6 @@ export type PostgreSQLPersistenceAdapterParams = {
 };
 
 /**
- * Abstract PostgreSQL connection for {@link PostgreSQLPersistenceAdapter}.
- */
-export abstract class PostgreSQLConnection {
-    public abstract query(query: string, params?: any[]): Promise<pg.QueryResult<any>>;
-    public abstract end(): Promise<void>;
-    public abstract checkConnection(): Promise<void>;
-}
-
-/**
- * PostgreSQL Pool connection extending {@link PostgreSQLConnection}.
- */
-export class PgPoolConnection extends PostgreSQLConnection {
-    private pool: pg.Pool;
-    constructor(config: pg.PoolConfig) {
-        super();
-        this.pool = new pg.Pool(config);
-    }
-
-    public async query(query: string, params?: any[]): Promise<pg.QueryResult<any>> {
-        const connection = await this.pool.connect();
-        const result = await this.pool.query(query, params);
-        connection.release();
-        return result;
-    }
-
-    public async end(): Promise<void> {
-        return this.pool.end();
-    }
-
-    public async checkConnection(): Promise<void> {
-        const connection = await this.pool.connect();
-        connection.release();
-    }
-}
-
-/**
- * PostgreSQL Client connection extending {@link PostgreSQLConnection}.
- */
-export class PgClientConnection extends PostgreSQLConnection {
-    private client: pg.Client;
-    constructor(config: pg.ClientConfig) {
-        super();
-        this.client = new pg.Client(config);
-    }
-
-    public async query(query: string, params?: any[]): Promise<pg.QueryResult<any>> {
-        return await this.client.query(query, params);
-    }
-
-    public async end(): Promise<void> {
-        this.client.end();
-    }
-
-    public async checkConnection(): Promise<void> {
-        this.client.connect();
-    }
-}
-
-/**
  * Implementation of {@link PersistenceAdapter} using PostgreSQL.
  */
 export class PostgreSQLPersistenceAdapter implements PersistenceAdapter {
