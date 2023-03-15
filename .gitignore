@@ -1,5 +1,5 @@
 dist/
-playground/
+code_playground/
 node_modules/
 package-lock.json
 mock.ts
