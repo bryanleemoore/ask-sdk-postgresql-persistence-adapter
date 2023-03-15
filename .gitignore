@@ -3,3 +3,4 @@ playground/
 node_modules/
 package-lock.json
 mock.ts
+.env
