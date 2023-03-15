@@ -10,10 +10,7 @@
  * permissions and limitations under the License.
  */
 
-export {
-    PostgreSQLPersistenceAdapter,
-    PgClientConnection,
-    PgPoolConnection,
-    PartitionKeyGenerator,
-    PartitionKeyGenerators
-} from './attributes/persistence';
+export { PgClientConnection } from "./PgClientConnection"
+export { PgPoolConnection } from "./PgPoolConnection"
+export { PostgreSQLPersistenceAdapter } from "./PostgreSQLPersistenceAdapter"
+export { PartitionKeyGenerators, PartitionKeyGenerator } from "./PartitionKeyGenerators"

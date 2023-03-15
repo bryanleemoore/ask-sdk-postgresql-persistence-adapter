@@ -13,7 +13,7 @@
 import { createAskSdkError, PersistenceAdapter } from 'ask-sdk-core';
 import { RequestEnvelope } from 'ask-sdk-model';
 import { PartitionKeyGenerator, PartitionKeyGenerators } from './PartitionKeyGenerators';
-import * as pg from 'pg';
+import { PostgreSQLConnection } from './PostgreSQLConnection';
 
 export type PostgreSQLPersistenceAdapterParams = {
     tableName: string;
