@@ -27,7 +27,6 @@ const PgConnectionConfig = {
 describe('PostgreSQLPersistenceAdapter with Client', () => {
   let adapter: PostgreSQLPersistenceAdapter
   let testConnection = new PgClientConnection(PgConnectionConfig)
-  console.log(testConnection)
   beforeAll(async () => {
     adapter = new PostgreSQLPersistenceAdapter({
       tableName: 'test_table_client',
