@@ -1,7 +1,6 @@
 dist/
 code_playground/
 node_modules/
-package-lock.json
 mock.ts
 coverage/
 .env
