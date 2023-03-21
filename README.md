@@ -1,5 +1,5 @@
 
-
+[![codecov](https://codecov.io/github/bryanleemoore/ask-sdk-postgresql-persistence-adapter/branch/main/graph/badge.svg?token=PRAU3C5NFJ)](https://codecov.io/github/bryanleemoore/ask-sdk-postgresql-persistence-adapter)
 
 ## What is ASK SDK for Node.js?
 
