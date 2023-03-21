@@ -12,3 +12,4 @@ jest.config.js
 package-lock.json
 tsconfig.json
 tslint.json
+CODE_OF_CONDUCT.md
