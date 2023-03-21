@@ -96,7 +96,7 @@ Full PostgreSQLPersistenceAdapter parameter options:
 - `partitionKeyName` (string) - Optional. The name of the partition key column. Default to "id" if not provided.
 - `attributesName` (string) - Optional.  The name of the attributes column. Default to "attributes" if not provided.
 - `partitionKeyGenerator` (function) - Optional. The function used to generate partition key using RequestEnvelope. Default to generate the partition key using the userId.
-- `connection` (PostgreSQLConnection) - The desired connection to query the PostgreSQL database. Use either PgPoolConnection (recommended) or PgClientConnection.;
+- `connection` (PostgreSQLConnection) - The desired connection to query the PostgreSQL database. Use either PgPoolConnection (recommended) or PgClientConnection.
 
 PgPoolConnection and PgClientConnection parameter config options are of type pg.PoolConfig and pg.ClientConfig:
 - Read more about [pg.Client](https://node-postgres.com/apis/client) and [pg.Pool](https://node-postgres.com/apis/pool) parameter options.
