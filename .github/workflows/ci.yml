@@ -52,3 +52,6 @@ jobs:
         USER_ID: amzn1.ask.account.test-account-1234
         APPLICATION_ID: amzn1.ask.skill.test-appid-1234
         SESSION_ID: amzn1.echo-api.session.test-sessionid-1234
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
