@@ -2,6 +2,7 @@ lib/
 node_modules/
 code_playground/
 test/
+coverage/
 .env
 .env.example
 .prettierrc
