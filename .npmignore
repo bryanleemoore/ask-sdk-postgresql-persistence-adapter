@@ -3,6 +3,7 @@ node_modules/
 code_playground/
 test/
 coverage/
+.github/
 .env
 .env.example
 .prettierrc
