@@ -6,6 +6,22 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
 
     strategy:
       matrix:
@@ -25,3 +41,14 @@ jobs:
 
     - name: Run the tests
       run: npm test -- --coverage
+      env:
+        DB_USER: postgres
+        DB_HOST: localhost
+        DB_PASSWORD: postgres
+        DB_PORT: 5432
+        REQUEST_ID: amzn1.echo-api.request.test-requestid-1234
+        API_ACCESS_TOKEN: test-api-token-1234
+        DEVICE_ID: amzn1.ask.device.test-device-1234
+        USER_ID: amzn1.ask.account.test-account-1234
+        APPLICATION_ID: amzn1.ask.skill.test-appid-1234
+        SESSION_ID: amzn1.echo-api.session.test-sessionid-1234
