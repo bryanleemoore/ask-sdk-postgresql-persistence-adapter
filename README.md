@@ -1,5 +1,6 @@
-
-
+[![codecov](https://codecov.io/github/bryanleemoore/ask-sdk-postgresql-persistence-adapter/branch/main/graph/badge.svg?token=PRAU3C5NFJ)](https://app.codecov.io/github/bryanleemoore/ask-sdk-postgresql-persistence-adapter)
+[![npm version](https://badge.fury.io/js/ask-sdk-postgresql-persistence-adapter.svg)](https://badge.fury.io/js/ask-sdk-postgresql-persistence-adapter)
+![npm](https://img.shields.io/npm/dt/ask-sdk-postgresql-persistence-adapter)
 
 ## What is ASK SDK for Node.js?
 
