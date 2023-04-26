@@ -23,7 +23,7 @@ npm install --save ask-sdk-postgresql-persistence-adapter
 
 ## Usage and Getting Started
 
-This package uses [node-postgres](https://node-postgres.com/) to establish either a client or pool connection by importing either a PgClientConnection or PgPoolConnection along with the persistence adapter. It is recommended that you use a pool connection for your skill. You can read more about pooling and why you should use it [here](https://node-postgres.com/).
+This package uses [node-postgres](https://node-postgres.com/) to establish either a client or pool connection by importing either a PgClientConnection or PgPoolConnection along with the persistence adapter. It is recommended that you use a pool connection for your skill. You can read more about pooling and why you should use it [here](https://node-postgres.com/features/pooling).
 
 
 
@@ -100,19 +100,6 @@ Full PostgreSQLPersistenceAdapter parameter options:
 
 PgPoolConnection and PgClientConnection parameter config options are of type pg.PoolConfig and pg.ClientConfig:
 - Read more about [pg.Client](https://node-postgres.com/apis/client) and [pg.Pool](https://node-postgres.com/apis/pool) parameter options.
-
-
-## Usage with TypeScript
-The ASK SDK PostgreSQL Persistence Adapter package for Node.js bundles TypeScript definition files for use in TypeScript projects and to support tools that can read .d.ts files. The goal is to keep these TypeScript definition files updated with each release for any public api.
-
-### Pre-requisites
-Before you can begin using these TypeScript definitions with your project, you need to make sure your project meets a few of these requirements:
-- Use TypeScript v2.x
-- Includes the TypeScript definitions for node. You can use npm to install this by typing the following into a terminal window:
-
-```
-npm install --save-dev @types/node
-```
 
 ### In Node.js
 To use the TypeScript definition files within a Node.js project, simply import ask-sdk-postgresql-persistence-adapter as below:
